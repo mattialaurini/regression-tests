@@ -237,3 +237,8 @@ Copy the contents of this folder to GitHub. Do not publish local solver
 installations, virtual environments, license keys, or newly generated run
 folders; `.gitignore` excludes those paths. Add the repository URL and the
 Zenodo release DOI once the authors publish and archive the release.
+
+## Archived release
+
+Version 1.1.1 is archived on Zenodo:
+[https://doi.org/10.5281/zenodo.24583728](https://doi.org/10.5281/zenodo.24583728).
