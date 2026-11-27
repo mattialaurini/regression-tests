@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite this release and the accompanying manuscript."
+type: software
+title: "Separable regression tests: PK/PD identification and NIST benchmarks"
+version: "1.1.1"
+license: "PolyForm-Noncommercial-1.0.0"
+repository-code: "https://github.com/mattialaurini/regression-tests"
+url: "https://github.com/mattialaurini/regression-tests"
+abstract: >-
+  MATLAB implementations and reproduction scripts for separable nonlinear
+  regression experiments. The package includes PK/PD identification with
+  approximate-likelihood ARX and exact maximum-likelihood models, a six-model
+  patient illustration, bounded NIST regression benchmarks comparing
+  branch-and-bound with SCIP, and a matched-grid screening ablation.
+authors:
+  - given-names: "Giulia"
+    family-names: "Di Credico"
+  - given-names: "Luca"
+    family-names: "Consolini"
+  - given-names: "Mattia"
+    family-names: "Laurini"
+  - given-names: "Marco"
+    family-names: "Locatelli"
+  - given-names: "Marco"
+    family-names: "Milanesi"
+  - given-names: "Michele"
+    family-names: "Schiavo"
+  - given-names: "Antonio"
+    family-names: "Visioli"
+keywords:
+  - separable nonlinear regression
+  - branch-and-bound
+  - pharmacokinetic/pharmacodynamic identification
+  - NIST benchmarks
+  - reproducibility
