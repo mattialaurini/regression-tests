@@ -1,0 +1,190 @@
+[
+  [
+    "function result = solve_nist_bnb(problem,options)",
+    "function result = solve_nist_bnb_tolerance_study(problem,options)"
+  ],
+  [
+    "%SOLVE_NIST_BNB Interpolation-based BnB for bounded separable NIST models.",
+    "%SOLVE_NIST_BNB_TOLERANCE_STUDY Reviewed v1.0.6 solver with pruning counters.\n% Changes: unique visits; inclusive pruning; exact configured gap test;\n% separate counts for explicit pruning and queue closure at global success."
+  ],
+  [
+    "[heap,node] = localHeapPop(heap); stats.nodesProcessed = stats.nodesProcessed+1;",
+    "[heap,node] = localHeapPop(heap); stats.nodesProcessed = stats.nodesProcessed+1;\n    if ~node.visitedOnce\n        stats.nodesVisited=stats.nodesVisited+1;\n        node.visitedOnce=true;\n    end"
+  ],
+  [
+    "if m2Value<=threshold",
+    "if m2Value<threshold"
+  ],
+  [
+    "if m1Value<=threshold",
+    "if m1Value<threshold"
+  ],
+  [
+    "stats.nodesPruned=stats.nodesPruned+1;\n            stats.minimumPrunedLowerBound=min(stats.minimumPrunedLowerBound,m1Value);",
+    "stats.nodesPruned=stats.nodesPruned+1;\n            [toleranceOnly,ordinary,eligible]=nist_tolerance_prune_masks( ...\n                node.validLowerBound,incumbent.objective, ...\n                options.EpsilonRelative,options.EpsilonAbsolute);\n            assert(eligible,'Pruning classification inconsistent with the gap test.');\n            stats.prunedToleranceOnlyExplicit=stats.prunedToleranceOnlyExplicit+toleranceOnly;\n            stats.prunedAtIncumbentExplicit=stats.prunedAtIncumbentExplicit+ordinary;\n            stats.minimumPrunedLowerBound=min(stats.minimumPrunedLowerBound,node.validLowerBound);"
+  ],
+  [
+    "certificate=localCertificate(lastGlobalLowerBound,incumbent.objective,options);",
+    "certificate=localCertificate(lastGlobalLowerBound,incumbent.objective,options);\nif certificate && heap.count>0\n    % These are existing queued regions closed by the final certificate,\n    % not an estimate of descendants that would otherwise have been created.\n    bounds=zeros(heap.count,1);\n    for j=1:heap.count, bounds(j)=heap.nodes{j}.validLowerBound; end\n    [toleranceOnly,ordinary,eligible]=nist_tolerance_prune_masks( ...\n        bounds,incumbent.objective,options.EpsilonRelative,options.EpsilonAbsolute);\n    assert(all(eligible),'A global certificate does not cover all queued regions.');\n    stats.closedByGlobalGap=heap.count;\n    stats.prunedToleranceOnlyGlobal=sum(toleranceOnly);\n    stats.prunedAtIncumbentGlobal=sum(ordinary);\nend\nstats.prunedToleranceOnly=stats.prunedToleranceOnlyExplicit+stats.prunedToleranceOnlyGlobal;\nstats.prunedAtIncumbent=stats.prunedAtIncumbentExplicit+stats.prunedAtIncumbentGlobal;\nstats.prunedTotal=stats.nodesPruned+stats.closedByGlobalGap;\nassert(stats.prunedTotal==stats.prunedToleranceOnly+stats.prunedAtIncumbent, ...\n    'Pruning counters do not partition discarded nodes.');"
+  ],
+  [
+    "result.wall_time=elapsed; result.nodes=stats.nodesProcessed; result.total_nodes=stats.nodesCreated;",
+    "result.wall_time=elapsed; result.nodes=stats.nodesVisited; result.total_nodes=stats.nodesCreated;\nresult.queue_extractions=stats.nodesProcessed;\nresult.nodes_definition=\"distinct tree regions extracted at least once\";"
+  ],
+  [
+    "stats=struct(\"nodesProcessed\",0,\"nodesCreated\",0,\"nodesBranched\",0, ...",
+    "stats=struct(\"nodesProcessed\",0,\"nodesVisited\",0,\"nodesCreated\",0,\"nodesBranched\",0, ...\n    \"prunedToleranceOnlyExplicit\",0,\"prunedAtIncumbentExplicit\",0, ...\n    \"closedByGlobalGap\",0,\"prunedToleranceOnlyGlobal\",0, ...\n    \"prunedAtIncumbentGlobal\",0,\"prunedToleranceOnly\",0, ...\n    \"prunedAtIncumbent\",0,\"prunedTotal\",0, ..."
+  ],
+  [
+    "node=struct(\"region\",region,\"M\",M,\"validLowerBound\",validLowerBound, ...",
+    "node=struct(\"region\",region,\"M\",M,\"validLowerBound\",validLowerBound, ...\n    \"visitedOnce\",false, ..."
+  ],
+  [
+    "yes=isfinite(upper) && lower>=(1-options.EpsilonRelative)*upper-options.EpsilonAbsolute-1e-10;",
+    "yes=isfinite(upper) && lower>=(1-options.EpsilonRelative)*upper-options.EpsilonAbsolute;"
+  ],
+  [
+    "lower>=(1-history.targets(k))*upper-history.epsilonAbsolute-1e-10",
+    "lower>=(1-history.targets(k))*upper-history.epsilonAbsolute"
+  ],
+  [
+    "            fprintf(\"NIST BnB %s: nodes=%d, queue=%d, UB=%.8g, valid-LB=%.8g, time=%.1fs\\n\", ...\n                problem.id,stats.nodesProcessed,heap.count,incumbent.objective, ...",
+    "            fprintf(\"NIST BnB %s: visited=%d, extracts=%d, queue=%d, UB=%.8g, valid-LB=%.8g, time=%.1fs\\n\", ...\n                problem.id,stats.nodesVisited,stats.nodesProcessed,heap.count,incumbent.objective, ..."
+  ],
+  [
+    "result.matlab_validation=struct(\"objective_recomputed\",checkObjective, ...\n    \"objective_abs_difference\",abs(checkObjective-incumbent.objective),\"passed\",validationPassed);",
+    "result.matlab_validation=struct(\"objective_recomputed\",checkObjective, ...\n    \"objective_abs_difference\",abs(checkObjective-incumbent.objective),\"passed\",validationPassed);\n% Include final classification and independent validation in measured wall time.\nresult.wall_time=toc(startTimer);"
+  ],
+  [
+    "region=parent.region; lengths=region.zUpper-region.zLower;\nif options.BranchingRule==\"normalized_longest_edge\"\n    rootLengths=problem.zUpper-problem.zLower;\n    scale=max(rootLengths,eps(max(1,max(abs(rootLengths)))));\n    branchingLengths=lengths./scale;\nelse\n    branchingLengths=lengths;\nend\nmaxLength=max(branchingLengths); tolerance=options.TieTolerance*max(1,maxLength);\ncandidates=find(abs(branchingLengths-maxLength)<=tolerance);\nstats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0);\n",
+    "region=parent.region;\ncandidates=nist_branch_candidates(region,problem,options);\nstats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0);\nif isempty(candidates)\n    child1=[]; child2=[]; priority1=0; priority2=0; selected=0;\n    return\nend\n"
+  ],
+  [
+    "r1=region; r2=region; midpoint=(region.zLower(j)+region.zUpper(j))/2;\nr1.zUpper(j)=midpoint; r2.zLower(j)=midpoint;",
+    "r1=region; r2=region;\nlo=region.zLower(j); hi=region.zUpper(j);\nmidpoint=lo+(hi-lo)/2;\nif ~isfinite(midpoint), midpoint=lo/2+hi/2; end\nassert(lo<midpoint && midpoint<hi,'NISTBranch:NoProgress', ...\n    'The selected side has no strictly interior floating-point midpoint.');\nr1.zUpper(j)=midpoint; r2.zLower(j)=midpoint;"
+  ],
+  [
+    "        stats.nodesBranched=stats.nodesBranched+1; stats.nodesCreated=stats.nodesCreated+2;\n        stats.branchCountByDimension(selectedDimension)=stats.branchCountByDimension(selectedDimension)+1;\n        stats.maxBranchDepthByDimension=max(stats.maxBranchDepthByDimension,child1.branchDepthByDimension);\n        stats.maxBranchDepthByDimension=max(stats.maxBranchDepthByDimension,child2.branchDepthByDimension);\n        heap=localHeapPush(heap,child1,p1); heap=localHeapPush(heap,child2,p2);",
+    "        if isempty(child1)\n            % No representable bisection exists. Screening cannot justify\n            % pruning: evaluate a valid m1 bound before deciding how to stop.\n            if toc(startTimer)>=options.TimeLimit\n                heap=localHeapPush(heap,node,node.priority); status=\"timelimit\"; break\n            end\n            M=node.M;\n            while M>options.MaximumFineGridPoints\n                q=max(1,floor((M-1)/(2*(options.CoarseGridPoints-1))));\n                nextM=1+q*(options.CoarseGridPoints-1);\n                assert(nextM<M,'Invalid precision-fallback grid reduction.');\n                M=nextM;\n            end\n            t=tic;\n            m1=compute_nist_m1_bound(problem,node.region,M, ...\n                localRemainingQPOptions(options.QPOptions,startTimer,options.TimeLimit));\n            stats.m1Evaluations=stats.m1Evaluations+1;\n            stats.precisionFallbackM1Evaluations=stats.precisionFallbackM1Evaluations+1;\n            stats.m1Time=stats.m1Time+toc(t); stats.qpTime=stats.qpTime+m1.wallTime;\n            node.M=M; node.validLowerBound=max(node.validLowerBound,m1.value);\n            threshold=(1-options.EpsilonRelative)*incumbent.objective-options.EpsilonAbsolute;\n            if node.validLowerBound>=threshold\n                stats.nodesPruned=stats.nodesPruned+1;\n                [toleranceOnly,ordinary,eligible]=nist_tolerance_prune_masks( ...\n                    node.validLowerBound,incumbent.objective, ...\n                    options.EpsilonRelative,options.EpsilonAbsolute);\n                assert(eligible,'Precision-fallback pruning classification failed.');\n                stats.prunedToleranceOnlyExplicit=stats.prunedToleranceOnlyExplicit+toleranceOnly;\n                stats.prunedAtIncumbentExplicit=stats.prunedAtIncumbentExplicit+ordinary;\n                stats.minimumPrunedLowerBound=min(stats.minimumPrunedLowerBound,node.validLowerBound);\n            else\n                % Preserve the unresolved region and its bound. Never turn a\n                % precision limit into a global optimality certificate.\n                heap=localHeapPush(heap,node,node.priority);\n                stats.precisionLimitedNodes=stats.precisionLimitedNodes+1;\n                status=\"numerical_resolution_limit\";\n                if toc(startTimer)>=options.TimeLimit, status=\"timelimit\"; end\n                break\n            end\n        else\n            stats.nodesBranched=stats.nodesBranched+1; stats.nodesCreated=stats.nodesCreated+2;\n            stats.branchCountByDimension(selectedDimension)=stats.branchCountByDimension(selectedDimension)+1;\n            stats.maxBranchDepthByDimension=max(stats.maxBranchDepthByDimension,child1.branchDepthByDimension);\n            stats.maxBranchDepthByDimension=max(stats.maxBranchDepthByDimension,child2.branchDepthByDimension);\n            heap=localHeapPush(heap,child1,p1); heap=localHeapPush(heap,child2,p2);\n        end"
+  ],
+  [
+    "    \"maxNodeDepth\",0, ...",
+    "    \"maxNodeDepth\",0,\"precisionFallbackM1Evaluations\",0,\"precisionLimitedNodes\",0, ..."
+  ],
+  [
+    "% separate counts for explicit pruning and queue closure at global success.",
+    "% separate counts for explicit pruning and queue closure at global success.\n% Branch fix: relative ties, strictly progressing splits, explicit precision limit."
+  ],
+  [
+    "            stats.m1Evaluations=stats.m1Evaluations+1;\n            stats.precisionFallbackM1Evaluations",
+    "            stats.m1Evaluations=stats.m1Evaluations+1;\n            if m2Value<threshold\n                stats.m1SkippedByScreening=stats.m1SkippedByScreening-1;\n            end\n            stats.precisionFallbackM1Evaluations"
+  ],
+  [
+    "t=tic; m2=compute_nist_m2_screening(problem,node.region,",
+    "t=tic; m2=compute_nist_m2_screening_stable(problem,node.region,"
+  ],
+  [
+    "t=tic; m1=compute_nist_m1_bound(problem,node.region,node.M,",
+    "t=tic; m1=compute_nist_m1_bound_stable(problem,node.region,node.M,"
+  ],
+  [
+    "            m1=compute_nist_m1_bound(problem,node.region,M,",
+    "            m1=compute_nist_m1_bound_stable(problem,node.region,M,"
+  ],
+  [
+    "bound=compute_nist_m2_screening(problem,region,options.CoarseGridPoints,",
+    "bound=compute_nist_m2_screening_stable(problem,region,options.CoarseGridPoints,"
+  ],
+  [
+    "        m2Value=m2.value; stats.m2Evaluations=stats.m2Evaluations+1;",
+    "        m2Value=m2.value; stats.m2Evaluations=stats.m2Evaluations+1;\n        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+double(~m2.screeningAvailable);"
+  ],
+  [
+    "        m1Value=m1.value; stats.m1Evaluations=stats.m1Evaluations+1;",
+    "        m1Value=m1.value; stats.m1Evaluations=stats.m1Evaluations+1;\n        stats.m1IntervalFallbacks=stats.m1IntervalFallbacks+double(m1.intervalFallbackUsed);"
+  ],
+  [
+    "            stats.precisionFallbackM1Evaluations=stats.precisionFallbackM1Evaluations+1;",
+    "            stats.precisionFallbackM1Evaluations=stats.precisionFallbackM1Evaluations+1;\n            stats.m1IntervalFallbacks=stats.m1IntervalFallbacks+double(m1.intervalFallbackUsed);"
+  ],
+  [
+    "        stats.m2Evaluations=stats.m2Evaluations+branchStats.m2Evaluations;",
+    "        stats.m2Evaluations=stats.m2Evaluations+branchStats.m2Evaluations;\n        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+branchStats.m2UnavailableEvaluations;"
+  ],
+  [
+    "    \"maxNodeDepth\",0,\"precisionFallbackM1Evaluations\",0,\"precisionLimitedNodes\",0, ...",
+    "    \"maxNodeDepth\",0,\"precisionFallbackM1Evaluations\",0,\"precisionLimitedNodes\",0, ...\n    \"m1IntervalFallbacks\",0,\"m2UnavailableEvaluations\",0, ..."
+  ],
+  [
+    "stats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0);",
+    "stats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0,\"m2UnavailableEvaluations\",0);"
+  ],
+  [
+    "    [priority1,qp1,time1]=localChildPriority(problem,region1,options,startTimer);\n    [priority2,qp2,time2]=localChildPriority(problem,region2,options,startTimer);",
+    "    [priority1,qp1,time1,unavailable1]=localChildPriority(problem,region1,options,startTimer);\n    [priority2,qp2,time2,unavailable2]=localChildPriority(problem,region2,options,startTimer);\n    stats.m2UnavailableEvaluations=unavailable1+unavailable2;"
+  ],
+  [
+    "        [p1,qp1,time1]=localChildPriority(problem,r1,options,startTimer);\n        [p2,qp2,time2]=localChildPriority(problem,r2,options,startTimer);",
+    "        [p1,qp1,time1,unavailable1]=localChildPriority(problem,r1,options,startTimer);\n        [p2,qp2,time2,unavailable2]=localChildPriority(problem,r2,options,startTimer);\n        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+unavailable1+unavailable2;"
+  ],
+  [
+    "function [priority,qpTime,totalTime]=localChildPriority(problem,region,options,startTimer)\nt=tic;",
+    "function [priority,qpTime,totalTime,unavailable]=localChildPriority(problem,region,options,startTimer)\nt=tic; unavailable=0;"
+  ],
+  [
+    "priority=bound.value; qpTime=bound.wallTime; totalTime=toc(t);",
+    "priority=bound.value; qpTime=bound.wallTime; totalTime=toc(t);\nunavailable=double(~bound.screeningAvailable);"
+  ],
+  [
+    "        stats.m1IntervalFallbacks=stats.m1IntervalFallbacks+double(m1.intervalFallbackUsed);\n        stats.m1Time",
+    "        stats.m1UnavailableBounds=stats.m1UnavailableBounds+double(~m1.boundAvailable);\n        stats.m1Time"
+  ],
+  [
+    "            stats.m1IntervalFallbacks=stats.m1IntervalFallbacks+double(m1.intervalFallbackUsed);\n            stats.m1Time",
+    "            stats.m1UnavailableBounds=stats.m1UnavailableBounds+double(~m1.boundAvailable);\n            stats.m1Time"
+  ],
+  [
+    "\"m1IntervalFallbacks\",0,\"m2UnavailableEvaluations\",0,",
+    "\"m1UnavailableBounds\",0,\"m2UnavailableEvaluations\",0,"
+  ],
+  [
+    "        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+double(~m2.screeningAvailable);",
+    "        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+double(~m2.screeningAvailable);\n        stats.m2QpRetries=stats.m2QpRetries+m2.qpRetryCount;"
+  ],
+  [
+    "\n        stats.m1UnavailableBounds=stats.m1UnavailableBounds+double(~m1.boundAvailable);",
+    "\n        stats.m1UnavailableBounds=stats.m1UnavailableBounds+double(~m1.boundAvailable);\n        stats.m1QpRetries=stats.m1QpRetries+m1.qpRetryCount;"
+  ],
+  [
+    "\n            stats.m1UnavailableBounds=stats.m1UnavailableBounds+double(~m1.boundAvailable);",
+    "\n            stats.m1UnavailableBounds=stats.m1UnavailableBounds+double(~m1.boundAvailable);\n            stats.m1QpRetries=stats.m1QpRetries+m1.qpRetryCount;"
+  ],
+  [
+    "        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+branchStats.m2UnavailableEvaluations;",
+    "        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+branchStats.m2UnavailableEvaluations;\n        stats.m2QpRetries=stats.m2QpRetries+branchStats.m2QpRetries;"
+  ],
+  [
+    "    \"m1UnavailableBounds\",0,\"m2UnavailableEvaluations\",0, ...",
+    "    \"m1UnavailableBounds\",0,\"m2UnavailableEvaluations\",0,\"m1QpRetries\",0,\"m2QpRetries\",0, ..."
+  ],
+  [
+    "stats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0,\"m2UnavailableEvaluations\",0);",
+    "stats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0,\"m2UnavailableEvaluations\",0,\"m2QpRetries\",0);"
+  ],
+  [
+    "    [priority1,qp1,time1,unavailable1]=localChildPriority(problem,region1,options,startTimer);\n    [priority2,qp2,time2,unavailable2]=localChildPriority(problem,region2,options,startTimer);",
+    "    [priority1,qp1,time1,unavailable1,retries1]=localChildPriority(problem,region1,options,startTimer);\n    [priority2,qp2,time2,unavailable2,retries2]=localChildPriority(problem,region2,options,startTimer);\n    stats.m2QpRetries=retries1+retries2;"
+  ],
+  [
+    "        [p1,qp1,time1,unavailable1]=localChildPriority(problem,r1,options,startTimer);\n        [p2,qp2,time2,unavailable2]=localChildPriority(problem,r2,options,startTimer);",
+    "        [p1,qp1,time1,unavailable1,retries1]=localChildPriority(problem,r1,options,startTimer);\n        [p2,qp2,time2,unavailable2,retries2]=localChildPriority(problem,r2,options,startTimer);\n        stats.m2QpRetries=stats.m2QpRetries+retries1+retries2;"
+  ],
+  [
+    "function [priority,qpTime,totalTime,unavailable]=localChildPriority(problem,region,options,startTimer)\nt=tic; unavailable=0;",
+    "function [priority,qpTime,totalTime,unavailable,retries]=localChildPriority(problem,region,options,startTimer)\nt=tic; unavailable=0; retries=0;"
+  ],
+  [
+    "unavailable=double(~bound.screeningAvailable);",
+    "unavailable=double(~bound.screeningAvailable); retries=bound.qpRetryCount;"
+  ]
+]

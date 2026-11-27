@@ -1,0 +1,11 @@
+function bound=compute_nist_m1_bound_stable(~,region,nPoints,varargin)
+global NIST_TOLERANCE_TEST_CASE
+value=NIST_TOLERANCE_TEST_CASE.lower; available=true;
+NIST_TOLERANCE_TEST_CASE.fineGrids(end+1)=nPoints;
+if NIST_TOLERANCE_TEST_CASE.mode=="global_queue"&&region.zUpper-region.zLower<1
+    value=0.25;
+elseif NIST_TOLERANCE_TEST_CASE.mode=="failed_root"
+    available=region.zUpper-region.zLower<1; value=double(available);
+end
+bound=struct('value',value,'wallTime',0,'qpRetryCount',0,'boundAvailable',available);
+end

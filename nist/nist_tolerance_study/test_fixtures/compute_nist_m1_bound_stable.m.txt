@@ -1,0 +1,8 @@
+function bound=compute_nist_m1_bound_stable(~,region,varargin)
+global NIST_TOLERANCE_TEST_CASE
+value=NIST_TOLERANCE_TEST_CASE.lower;
+if NIST_TOLERANCE_TEST_CASE.mode=="global_queue"&&region.zUpper-region.zLower<1
+    value=0.25;
+end
+bound=struct('value',value,'wallTime',0,'qpRetryCount',0,'boundAvailable',true);
+end

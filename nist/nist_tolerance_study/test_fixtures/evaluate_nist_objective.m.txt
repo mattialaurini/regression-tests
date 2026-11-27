@@ -1,0 +1,3 @@
+function [objective,residual,prediction]=evaluate_nist_objective(~,linear,~)
+residual=linear(:); prediction=residual; objective=sum(residual.^2);
+end

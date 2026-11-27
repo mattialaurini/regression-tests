@@ -1,0 +1,34 @@
+function result = solve_nist_outer_relaxation_qp(G,cMinus,cPlus,qpOptions)
+%SOLVE_NIST_OUTER_RELAXATION_QP Minimize squared two-norm over outer image.
+arguments
+    G double
+    cMinus double
+    cPlus double
+    qpOptions (1,1) struct = nist_qp_options()
+end
+[m,r] = size(G);
+if ~isequal(size(cMinus),[m,r]) || ~isequal(size(cPlus),[m,r])
+    error("Interpolation matrices must match G.");
+end
+% x=[weights(r); residual(m)].
+qp.Q = blkdiag(sparse(r,r),speye(m));
+qp.f = zeros(r+m,1);
+qp.objcon = 0;
+qp.Aineq = sparse([G+cMinus,-eye(m);-(G+cPlus),eye(m)]);
+qp.bineq = zeros(2*m,1);
+qp.Aeq = sparse([ones(1,r),zeros(1,m)]);
+qp.beq = 1;
+qp.lb = [zeros(r,1);-inf(m,1)];
+qp.ub = inf(r+m,1);
+raw = solve_nist_qp(qp,qpOptions);
+result = raw;
+result.safeLowerBound = 0;
+result.weights = [];
+if isfinite(raw.objectiveBound)
+    safety = double(qpOptions.BoundSafety)*(1+abs(raw.objectiveBound));
+    result.safeLowerBound = max(0,raw.objectiveBound-safety);
+end
+if raw.hasSolution
+    result.weights = raw.x(1:r);
+end
+end

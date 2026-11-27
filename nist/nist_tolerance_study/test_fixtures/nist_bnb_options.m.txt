@@ -1,0 +1,5 @@
+function options=nist_bnb_options(varargin)
+global NIST_TOLERANCE_TEST_CASE
+options=NIST_TOLERANCE_TEST_CASE.options;
+for i=1:2:numel(varargin), options.(varargin{i})=varargin{i+1}; end
+end

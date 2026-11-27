@@ -1,0 +1,6 @@
+function result=solve_nist_reduced_local_search(varargin)
+global NIST_TOLERANCE_TEST_CASE
+NIST_TOLERANCE_TEST_CASE.localCalls=NIST_TOLERANCE_TEST_CASE.localCalls+1;
+result=struct('wallTime',0,'qpTime',0,'functionEvaluations',1, ...
+    'available',true,'hasSolution',false);
+end

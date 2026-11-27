@@ -1,0 +1,10 @@
+function upper=solve_nist_linear_block_qp(~,z,varargin)
+global NIST_TOLERANCE_TEST_CASE
+value=1;
+if NIST_TOLERANCE_TEST_CASE.mode=="global_queue"&&abs(z-0.5)>1e-12
+    value=0.25;
+end
+linear=sqrt(value);
+upper=struct('hasSolution',true,'objective',linear^2, ...
+    'linear',linear,'residual',linear,'prediction',linear,'wallTime',0);
+end

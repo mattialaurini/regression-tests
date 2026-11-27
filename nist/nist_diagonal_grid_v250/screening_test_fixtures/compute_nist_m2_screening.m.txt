@@ -1,0 +1,4 @@
+function bound=compute_nist_m2_screening(varargin)
+global NIST_TOLERANCE_TEST_CASE
+bound=struct('value',NIST_TOLERANCE_TEST_CASE.screen,'wallTime',0);
+end

@@ -1,0 +1,50 @@
+[
+  [
+    "function result = solve_nist_bnb_tolerance_study(problem,options)",
+    "function result = solve_nist_bnb_m2_removed(problem,options)"
+  ],
+  [
+    "%SOLVE_NIST_BNB_TOLERANCE_STUDY Reviewed v1.0.6 solver with pruning counters.",
+    "%SOLVE_NIST_BNB_M2_REMOVED v2.5.0 with the entire m2 component removed."
+  ],
+  [
+    "options = localNormalizeOptions(options);",
+    "options = localNormalizeOptions(options);\nassert(~options.StrongBranchingTieBreak, ...\n    'The reused v2.5.0 baseline must have strong branching disabled.');"
+  ],
+  [
+    "    if node.hasCachedM2 && node.cachedM2M==node.M\n        m2Value=node.cachedM2; node.hasCachedM2=false;\n    else\n        t=tic; m2=compute_nist_m2_screening_stable(problem,node.region, ...\n            options.CoarseGridPoints,node.M, ...\n            localRemainingQPOptions(options.QPOptions,startTimer,options.TimeLimit));\n        m2Value=m2.value; stats.m2Evaluations=stats.m2Evaluations+1;\n        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+double(~m2.screeningAvailable);\n        stats.m2QpRetries=stats.m2QpRetries+m2.qpRetryCount;\n        stats.m2Time=stats.m2Time+toc(t); stats.qpTime=stats.qpTime+m2.wallTime;\n    end\n",
+    "    % The complete m2 component is absent. Use only inherited VALID m1\n    % information for the existing poor-UB trigger; no new bound is added.\n    localSearchSignal=node.validLowerBound;\n"
+  ],
+  [
+    "localPeriodicLocalSearchTrigger(m2Value,incumbent.objective,stats,options,startTimer);",
+    "localPeriodicLocalSearchTrigger(localSearchSignal,incumbent.objective,stats,options,startTimer);"
+  ],
+  [
+    "    if m2Value<threshold\n        shouldBranch=true; stats.m1SkippedByScreening=stats.m1SkippedByScreening+1;\n    elseif node.M<=options.MaximumFineGridPoints",
+    "    if node.M<=options.MaximumFineGridPoints"
+  ],
+  [
+    "node.M=MNew; node.priority=m2Value; node.hasCachedM2=false;",
+    "node.M=MNew; node.priority=node.validLowerBound; node.hasCachedM2=false;"
+  ],
+  [
+    "            if m2Value<threshold\n                stats.m1SkippedByScreening=stats.m1SkippedByScreening-1;\n            end\n",
+    ""
+  ],
+  [
+    "function [child1,child2,priority1,priority2,stats,selected]=localDivide(problem,parent,options,startTimer)\nregion=parent.region;\ncandidates=nist_branch_candidates(region,problem,options);\nstats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0,\"m2UnavailableEvaluations\",0,\"m2QpRetries\",0);\nif isempty(candidates)\n    child1=[]; child2=[]; priority1=0; priority2=0; selected=0;\n    return\nend\nif numel(candidates)==1 || ~options.StrongBranchingTieBreak\n    selected=candidates(1);\n    [region1,region2]=localSplitRegion(region,selected);\n    [priority1,qp1,time1,unavailable1,retries1]=localChildPriority(problem,region1,options,startTimer);\n    [priority2,qp2,time2,unavailable2,retries2]=localChildPriority(problem,region2,options,startTimer);\n    stats.m2QpRetries=retries1+retries2;\n    stats.m2UnavailableEvaluations=unavailable1+unavailable2;\n    stats.m2Evaluations=2; stats.m2Time=time1+time2; stats.qpTime=qp1+qp2;\nelse\n    best=-Inf; region1=[]; region2=[]; priority1=0; priority2=0;\n    for j=candidates(:).'\n        [r1,r2]=localSplitRegion(region,j);\n        [p1,qp1,time1,unavailable1,retries1]=localChildPriority(problem,r1,options,startTimer);\n        [p2,qp2,time2,unavailable2,retries2]=localChildPriority(problem,r2,options,startTimer);\n        stats.m2QpRetries=stats.m2QpRetries+retries1+retries2;\n        stats.m2UnavailableEvaluations=stats.m2UnavailableEvaluations+unavailable1+unavailable2;\n        stats.m2Evaluations=stats.m2Evaluations+2;\n        stats.m2Time=stats.m2Time+time1+time2; stats.qpTime=stats.qpTime+qp1+qp2;\n        score=min(p1,p2);\n        if score>best, best=score; selected=j; region1=r1; region2=r2; priority1=p1; priority2=p2; end\n    end\nend\nchildBranchDepth=parent.branchDepthByDimension;\nchildBranchDepth(selected)=childBranchDepth(selected)+1;\nchild1=localMakeNode(region1,options.InitialApproxGridPoints,parent.validLowerBound,parent.depth+1,priority1,childBranchDepth);\nchild2=localMakeNode(region2,options.InitialApproxGridPoints,parent.validLowerBound,parent.depth+1,priority2,childBranchDepth);\nchild1.hasCachedM2=true; child1.cachedM2=priority1; child1.cachedM2M=options.InitialApproxGridPoints;\nchild2.hasCachedM2=true; child2.cachedM2=priority2; child2.cachedM2M=options.InitialApproxGridPoints;\nend\n",
+    "function [child1,child2,priority1,priority2,stats,selected]=localDivide(problem,parent,options,~)\nregion=parent.region;\ncandidates=nist_branch_candidates(region,problem,options);\nstats=struct(\"m2Evaluations\",0,\"m2Time\",0,\"qpTime\",0,\"m2UnavailableEvaluations\",0,\"m2QpRetries\",0);\nif isempty(candidates)\n    child1=[]; child2=[]; priority1=0; priority2=0; selected=0;\n    return\nend\nselected=candidates(1);\n[region1,region2]=localSplitRegion(region,selected);\n% The existing best-first heap uses available inherited m1 bounds instead\n% of m2 priorities. No extra child QP and no depth-first rule is introduced.\npriority1=parent.validLowerBound; priority2=parent.validLowerBound;\nchildBranchDepth=parent.branchDepthByDimension;\nchildBranchDepth(selected)=childBranchDepth(selected)+1;\nchild1=localMakeNode(region1,options.InitialApproxGridPoints,parent.validLowerBound,parent.depth+1,priority1,childBranchDepth);\nchild2=localMakeNode(region2,options.InitialApproxGridPoints,parent.validLowerBound,parent.depth+1,priority2,childBranchDepth);\nend\n"
+  ],
+  [
+    "function [priority,qpTime,totalTime,unavailable,retries]=localChildPriority(problem,region,options,startTimer)\nt=tic; unavailable=0; retries=0;\nif toc(startTimer)>=options.TimeLimit, priority=0; qpTime=0; totalTime=0; return, end\nbound=compute_nist_m2_screening_stable(problem,region,options.CoarseGridPoints, ...\n    options.InitialApproxGridPoints,localRemainingQPOptions(options.QPOptions,startTimer,options.TimeLimit));\npriority=bound.value; qpTime=bound.wallTime; totalTime=toc(t);\nunavailable=double(~bound.screeningAvailable); retries=bound.qpRetryCount;\nend\n",
+    ""
+  ],
+  [
+    "result.branching_rule=string(options.BranchingRule);",
+    "assert(stats.m2Evaluations==0 && stats.m1SkippedByScreening==0 && stats.m2QpRetries==0, ...\n    'The no-m2 variant must never evaluate or use m2.');\nresult.m2_enabled=false;\nresult.node_priority_signal=\"inherited_valid_lower_bound\";\nresult.local_search_signal=\"inherited_valid_lower_bound\";\nresult.grid_policy=\"original cap and reinsertion; realized grids may differ without screening\";\nresult.branching_rule=string(options.BranchingRule);"
+  ],
+  [
+    "function [run,reason,promiseScore]=localPeriodicLocalSearchTrigger(m2Value,upper,stats,options,startTimer)\nrun=false; reason=\"\"; promiseScore=0;\nif ~options.EnableLocalSearch || stats.localSearchDisabled\n    return\nend\nif stats.localSearchCalls>=options.LocalSearchMaxCalls\n    return\nend\nif ~localLocalSearchBudgetAvailable(stats,options,startTimer)\n    return\nend\ncooldown=stats.nodesProcessed-stats.lastLocalSearchNode>=options.LocalSearchCooldownNodes;\nif ~cooldown\n    return\nend\nstagnation=stats.nodesProcessed-stats.lastIncumbentImprovementNode>=options.LocalSearchStagnationNodes;\npoorUB=false;\nif options.LocalSearchPoorUBTrigger && stats.nodesProcessed>=options.LocalSearchPoorUBMinNodes && ...\n        isfinite(upper) && upper>0 && isfinite(m2Value)\n    promiseScore=max(0,min(1,1-m2Value/max(upper,realmin)));\n    poorUB=m2Value<=options.LocalSearchPoorUBRatio*upper;\nend\nif stagnation || poorUB\n    run=true;\n    if stagnation && poorUB\n        reason=\"stagnation+poor_ub\";\n    elseif stagnation\n        reason=\"stagnation\";\n    else\n        reason=\"poor_ub\";\n    end\nend\nend\n",
+    "function [run,reason,promiseScore]=localPeriodicLocalSearchTrigger(boundSignal,upper,stats,options,startTimer)\nrun=false; reason=\"\"; promiseScore=0;\nif ~options.EnableLocalSearch || stats.localSearchDisabled\n    return\nend\nif stats.localSearchCalls>=options.LocalSearchMaxCalls\n    return\nend\nif ~localLocalSearchBudgetAvailable(stats,options,startTimer)\n    return\nend\ncooldown=stats.nodesProcessed-stats.lastLocalSearchNode>=options.LocalSearchCooldownNodes;\nif ~cooldown\n    return\nend\nstagnation=stats.nodesProcessed-stats.lastIncumbentImprovementNode>=options.LocalSearchStagnationNodes;\npoorUB=false;\nif options.LocalSearchPoorUBTrigger && stats.nodesProcessed>=options.LocalSearchPoorUBMinNodes && ...\n        isfinite(upper) && upper>0 && isfinite(boundSignal)\n    promiseScore=max(0,min(1,1-boundSignal/max(upper,realmin)));\n    poorUB=boundSignal<=options.LocalSearchPoorUBRatio*upper;\nend\nif stagnation || poorUB\n    run=true;\n    if stagnation && poorUB\n        reason=\"stagnation+poor_ub\";\n    elseif stagnation\n        reason=\"stagnation\";\n    else\n        reason=\"poor_ub\";\n    end\nend\nend\n"
+  ]
+]

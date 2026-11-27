@@ -1,0 +1,6 @@
+function bound=compute_nist_m2_screening_stable(~,~,~,M,varargin)
+global NIST_TOLERANCE_TEST_CASE
+NIST_TOLERANCE_TEST_CASE.screenGrids(end+1)=M;
+value=NIST_TOLERANCE_TEST_CASE.screen;
+bound=struct('value',value,'wallTime',0,'qpRetryCount',0,'screeningAvailable',isfinite(value));
+end

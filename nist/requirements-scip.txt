@@ -1,0 +1,6 @@
+# Experiment versions recorded in the solver metadata. Install into the Python
+# interpreter selected by MATLAB; MATLAB/Gurobi require separate installations.
+numpy==2.5.3
+pyscipopt==6.2.1
+# Also verify the loaded native SCIP version is 10.0.2. PySCIPOpt's version
+# alone does not identify the native SCIP build on every installation.

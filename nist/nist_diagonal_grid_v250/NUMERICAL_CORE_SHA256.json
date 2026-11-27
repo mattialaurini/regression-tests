@@ -1,0 +1,15 @@
+{
+  "solve_nist_bnb_tolerance_study.m": "92d0727f4e54a294f3b8f349c2dc877cc84b474789de218bb384db5bfd4b2cca",
+  "solve_nist_bnb_m2_removed.m": "dd5e43c018b84e641775b0358173e98ae836c9f2c8c532cc649982362f74581e",
+  "compute_nist_m1_bound_stable.m": "015a3b67af08bd4d9ff68ecc4cc28e24482fbc9b26dc1fafa6cbe3105847bc02",
+  "compute_nist_m2_screening_stable.m": "e55c0ba753a91a780c822a3ce6287d845e5ab3c5a78d7b24ec9d3565a4988e2f",
+  "nist_branch_candidates.m": "35fd13575aeee0a71b2253e692b02fdcde9b0258e0ab63d7520d0a05bddbb7a7",
+  "nist_solve_outer_qp_verified.m": "c98f865e51b09df550372a2e98ecb3b73186d61e551c5dc94d5fbdcd2a2bc996",
+  "nist_outer_qp_primal_upper.m": "356b8496889d52bc8d77e9e0488266184aa0c0cbb00fc2f73911750d70ced6ce",
+  "nist_verify_qp_dual.m": "e026cf6cff16142f4230e30258f01824669c9d2b1e078e84fa514b14771ba684",
+  "nist_tolerance_prune_masks.m": "f62fd6040e26bdccc59ba91b03d979783d4f16a6ccf7dc7285038377fb6bac77",
+  "nist_tolerance_result_row.m": "b784a6ab1eb471e9c2a0c1faba68ce20b003293659a5287ebc5b1f8da6e942ed",
+  "solve_nist_outer_relaxation_qp_stable.m": "0887054680f69da2bce16b21763867ab190446e1fc72fb750ed408948cd826af",
+  "check_nist_qp_recovery.m": "8f4ecc7af091eae29ee719b9127fd41f67adf52e04a5c438197b52ad89749de3",
+  "test_nist_qp_recovery.m": "87e3c1359dd6ef4b679782c4fa7596fcccd5e4306a17b8d600f1ddb11211ada8"
+}

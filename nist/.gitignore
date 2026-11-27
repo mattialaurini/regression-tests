@@ -1,0 +1,13 @@
+outputs/
+reports/
+.reproduction/
+nist_separable_benchmark_v1_0_6/output/
+__pycache__/
+*.pyc
+*.asv
+.DS_Store
+*.log
+*.mex*
+gurobi.lic
+.venv/
+venv/

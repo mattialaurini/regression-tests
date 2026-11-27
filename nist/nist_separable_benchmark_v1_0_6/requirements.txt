@@ -1,0 +1,2 @@
+numpy>=2.0,<3
+pyscipopt>=6.2,<7

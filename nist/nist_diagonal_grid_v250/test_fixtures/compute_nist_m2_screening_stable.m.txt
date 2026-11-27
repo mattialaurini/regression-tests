@@ -1,0 +1,3 @@
+function bound=compute_nist_m2_screening_stable(varargin) %#ok<STOUT,INUSD>
+error('NISTRemoval:M2Called','The complete m2 component must be absent.');
+end
